@@ -32,9 +32,6 @@ dependencies = [
     "sherpa-onnx>=1.10.39",
     "soundfile>=0.12.1",
     "tomli>=2.2.1",
-    "torch==2.2.2; sys_platform == 'darwin' and platform_machine == 'x86_64'",
-    "torch>=2.6.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "torch>=2.6.0; sys_platform != 'darwin'",
     "tqdm>=4.67.1",
     "uvicorn[standard]>=0.33.0",
     "websocket-client>=1.8.0",
@@ -48,6 +45,9 @@ bilibili = [
     "Brotli~=1.1.0",
     "yarl>=1.12.0,<2.0"
 ]
+reachy = [
+    "sounddevice>=0.5.0",
+]
 
 [tool.pixi.project]
 channels = ["conda-forge"]
@@ -55,10 +55,6 @@ platforms = ["win-64", "linux-64"]
 
 [tool.pixi.pypi-dependencies]
 open-llm-vtuber = { path = ".", editable = true }
-
-[tool.pixi.dependencies]
-cudnn = ">=8.0,<9"
-cudatoolkit = ">=11.0,<12"
 
 [tool.ruff]
 target-version = "py310"
