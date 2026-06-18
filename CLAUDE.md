@@ -20,7 +20,8 @@ Open-LLM-VTuber is a voice-interactive AI companion with Live2D avatar support t
 - **Run pre-commit hooks**: `pre-commit run --all-files`
 
 ### Server Configuration
-- **Main config file**: `conf.yaml` (user configuration)
+- **Main config file**: `conf.yaml` (user configuration, gitignored)
+- **Example full config (this fork)**: `example.conf.yaml` — copy to `conf.yaml`; see `REACHY.md`
 - **Default configs**: `config_templates/conf.default.yaml` and `config_templates/conf.ZH.default.yaml`
 - **Character configs**: `characters/` directory (YAML files)
 
@@ -111,7 +112,7 @@ The codebase uses the missing `_cleanup_failed_connection` method pattern - when
 - **Entry point**: `run_server.py`
 - **Main server**: `src/open_llm_vtuber/server.py`
 - **WebSocket routing**: `src/open_llm_vtuber/routes.py`
-- **Configuration**: `conf.yaml` (user), `config_templates/` (defaults)
+- **Configuration**: `conf.yaml` (user), `example.conf.yaml` (tracked sample → copy to `conf.yaml`), `config_templates/` (defaults)
 - **Frontend**: `frontend/` (Git submodule)
 - **Live2D models**: `live2d-models/`
 - **Character definitions**: `characters/`

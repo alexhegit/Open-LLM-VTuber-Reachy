@@ -4,7 +4,7 @@
 
 ## 简体中文摘要
 
-本仓库通过根目录的 **`reachy_bridge.py`** 把 Open-LLM-VTuber 的 **`/client-ws`** 语音与表情流接到 **Pollen Reachy Mini Lite**（MuJoCo 仿真或真机）。安装请执行 **`uv sync --extra reachy`**（包含官方 **`reachy-mini[mujoco]`**、麦克风 **`sounddevice`**、**`websockets`**）。服务端默认 **`tts_model: edge_tts`**（微软 Edge 语音，需联网）。麦克风模式会在检测到说话后发送 ``mic-audio-data``，并在停顿约 1.5 秒后发送 ``mic-audio-end`` 才会触发服务端 ASR（与网页端协议一致）。环境变量 **`OLV_REACHY_EMOTION_CALLABLE`**、**`OLV_BRIDGE_SPEECH_RMS`** 等见 **`REACHY.md`** 英文小节与 **`AGENTS.md`**。
+本仓库通过根目录的 **`reachy_bridge.py`** 把 Open-LLM-VTuber 的 **`/client-ws`** 语音与表情流接到 **Pollen Reachy Mini Lite**（MuJoCo 仿真或真机）。安装请执行 **`uv sync --extra reachy`**（包含官方 **`reachy-mini[mujoco]`**、麦克风 **`sounddevice`**、**`websockets`**）。服务端默认 **`tts_model: edge_tts`**（微软 Edge 语音，需联网）。根目录 **`example.conf.yaml`** 是可入库的整站配置样例（含 Ollama `qwen3:0.6b` 等），复制为 **`conf.yaml`** 后启动：`cp example.conf.yaml conf.yaml && uv run run_server.py`（`conf.yaml` 被 git 忽略）。麦克风模式会在检测到说话后发送 `mic-audio-data`，并在停顿约 1.5 秒后发送 `mic-audio-end` 才会触发服务端 ASR（与网页端协议一致）。环境变量 **`OLV_REACHY_EMOTION_CALLABLE`**、**`OLV_BRIDGE_SPEECH_RMS`** 等见 **`REACHY.md`** 英文小节与 **`AGENTS.md`**。
 
 ---
 
@@ -31,6 +31,18 @@ The checked-in **`requirements.txt`** is generated with `uv export --frozen` for
 ### PyTorch
 
 `torch` is still **not** part of the default dependency set (GPU-specific wheels). Install it separately as described in `AGENTS.md` / `README.md` if your ASR or other components need it.
+
+## Example server config (`example.conf.yaml`)
+
+The repo root includes **`example.conf.yaml`**: a **checked-in sample** of a full server configuration used with this fork (e.g. **Ollama** `qwen3:0.6b`, **Edge TTS**, sherpa ASR, `mao_pro`). The application **only reads `conf.yaml`** at the project root; that file is **gitignored** so local secrets are not committed.
+
+```bash
+cp example.conf.yaml conf.yaml
+# Edit conf.yaml: API keys, voices, paths, Bilibili settings, etc.
+uv run run_server.py
+```
+
+Upstream quick-start often uses `config_templates/conf.default.yaml` → `conf.yaml`; use **`example.conf.yaml`** when you want the same defaults we test with **Reachy + text mode** (bridge URL `ws://127.0.0.1:12393/client-ws`).
 
 ## Run the bridge
 

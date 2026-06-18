@@ -28,7 +28,7 @@ After adding a dependency to `pyproject.toml`, also add it to `requirements.txt`
 
 - **Entrypoint**: `run_server.py` starts `WebSocketServer` (FastAPI + Uvicorn).
 - **Core source**: `src/open_llm_vtuber/` — single package, no sub-packages split across repos.
-- **Config**: `conf.yaml` (user) generated from `config_templates/conf.default.yaml` or `conf.ZH.default.yaml`. Validated by Pydantic models in `src/open_llm_vtuber/config_manager/`.
+- **Config**: `conf.yaml` (user, gitignored) is usually created from `config_templates/conf.default.yaml` or `conf.ZH.default.yaml`. For this fork’s tested defaults (Ollama `qwen3:0.6b`, Edge TTS, Reachy-oriented stack), copy **`example.conf.yaml`** → `conf.yaml` instead. Validated by Pydantic in `src/open_llm_vtuber/config_manager/`.
 - **Frontend**: Git submodule at `frontend/` (React app from separate repo `Open-LLM-VTuber-Web`). Do NOT edit directly — use `git restore frontend` if corrupted.
 - **Live2D models**: `live2d-models/` directory; model names must match entries in `model_dict.json`.
 - **Character configs**: `characters/` directory (YAML).
