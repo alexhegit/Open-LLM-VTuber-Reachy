@@ -3,6 +3,7 @@
 ## Quick Commands
 
 - **Lint**: `uv run ruff check .`
+- **Tests**: `uv sync --group dev` then `uv run pytest` (combine with Reachy: `uv sync --group dev --extra reachy`)
 - **Format**: `uv run ruff format .`
 - **Pre-commit**: `pre-commit run --all-files`
 - **Run server**: `uv run run_server.py`
@@ -69,17 +70,20 @@ Standalone WebSocket client that replaces the browser frontend — connects to O
 
 **Usage:**
 ```bash
-uv run reachy_bridge.py                    # MuJoCo simulation, mic input
-uv run reachy_bridge.py --usb              # USB connected robot
+uv run reachy_bridge.py                      # Spawns local MuJoCo sim daemon, mic input
+uv run reachy_bridge.py --usb              # Connect to an already-running Reachy daemon
+uv run reachy_bridge.py --reachy-host IP   # Remote daemon (network mode)
 uv run reachy_bridge.py --text-mode        # Keyboard input (no mic needed)
+uv run reachy_bridge.py --keep-sim-daemon  # Leave sim daemon running after bridge exits
 uv run reachy_bridge.py --server ws://HOST:PORT/client-ws
 ```
 
-**Install bridge deps:** `uv add sounddevice` (or `uv sync --extra reachy`)
+**Install bridge deps:** `uv sync --extra reachy` installs **`reachy-mini[mujoco]`**, **`sounddevice`**, and **`websockets`**. See **[REACHY.md](REACHY.md)** for setup, networking notes, and emotion hooks.
+
+**Custom emotion mapping:** set `OLV_REACHY_EMOTION_CALLABLE=my.module:function` where `function(reachy, emotion: str)` receives canonical labels `neutral`, `sadness`, `anger`, `joy`. If unset, the bridge uses built-in head poses via `reachy_mini.utils.create_head_pose` and `goto_target`.
 
 **Key protocol facts for modifying the bridge:**
 - Server audio: base64-encoded WAV, 16kHz, 16-bit PCM, mono
-- Client mic audio: `mic-audio-data` with `{"audio": [float32 samples]}` at 16kHz, then `mic-audio-end`
+- Client mic audio: `mic-audio-data` chunks, then **`mic-audio-end`** after silence to trigger ASR. After TTS, the bridge sends **`frontend-playback-complete`** when local playback finishes (required by the server).
 - Text input (bypasses ASR): `{"type": "text-input", "text": "..."}`
 - Emotions arrive in `audio` messages under `actions.expressions` as integer indices (mao_pro: 0=neutral, 1=sadness/fear, 2=anger/disgust, 3=joy/surprise)
-- The emotion-to-action functions at the top of `reachy_bridge.py` are stubs — fill in with your ReachyMiniChat `emotion_to_action()` calls

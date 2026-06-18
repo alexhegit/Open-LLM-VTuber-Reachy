@@ -1,10 +1,15 @@
 import atexit
+
+import httpx
 import requests
 from loguru import logger
+
 from .openai_compatible_llm import AsyncLLM
 
 
 class OllamaLLM(AsyncLLM):
+    """Ollama backend using OpenAI-compatible API; HTTP client ignores proxy env for localhost."""
+
     def __init__(
         self,
         model: str,
@@ -19,6 +24,9 @@ class OllamaLLM(AsyncLLM):
         self.keep_alive = keep_alive
         self.unload_at_exit = unload_at_exit
         self.cleaned = False
+        self._ollama_http_client = httpx.AsyncClient(trust_env=False)
+        self._ollama_requests_session = requests.Session()
+        self._ollama_requests_session.trust_env = False
         super().__init__(
             model=model,
             base_url=base_url,
@@ -26,13 +34,12 @@ class OllamaLLM(AsyncLLM):
             organization_id=organization_id,
             project_id=project_id,
             temperature=temperature,
+            http_client=self._ollama_http_client,
         )
         try:
-            # preload model
             logger.info("Preloading model for Ollama")
-            # Send the POST request to preload model
             logger.debug(
-                requests.post(
+                self._ollama_requests_session.post(
                     base_url.replace("/v1", "") + "/api/chat",
                     json={
                         "model": model,
@@ -47,22 +54,19 @@ class OllamaLLM(AsyncLLM):
             )
         except Exception as e:
             logger.error(f"Failed to preload model: {e}")
-        # If keep_alive is less than 0, register cleanup to unload the model
         if unload_at_exit:
             atexit.register(self.cleanup)
 
-    def __del__(self):
-        """Destructor to unload the model"""
+    def __del__(self) -> None:
+        """Destructor to unload the model."""
         self.cleanup()
 
-    def cleanup(self):
-        """Clean up function to unload the model when exitting"""
+    def cleanup(self) -> None:
+        """Unload the model when exiting."""
         if not self.cleaned and self.unload_at_exit:
             logger.info(f"Ollama: Unloading model: {self.model}")
-            # Unload the model
-            # unloading is just the same as preload, but with keep alive set to 0
             logger.debug(
-                requests.post(
+                self._ollama_requests_session.post(
                     self.base_url.replace("/v1", "") + "/api/chat",
                     json={
                         "model": self.model,
@@ -71,3 +75,7 @@ class OllamaLLM(AsyncLLM):
                 )
             )
             self.cleaned = True
+        try:
+            self._ollama_requests_session.close()
+        except Exception:
+            pass

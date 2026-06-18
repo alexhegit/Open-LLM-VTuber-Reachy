@@ -4,6 +4,8 @@ endpoints for language generation.
 """
 
 from typing import AsyncIterator, List, Dict, Any
+
+import httpx
 from openai import (
     AsyncStream,
     AsyncOpenAI,
@@ -30,6 +32,7 @@ class AsyncLLM(StatelessLLMInterface):
         organization_id: str = "z",
         project_id: str = "z",
         temperature: float = 1.0,
+        http_client: httpx.AsyncClient | None = None,
     ):
         """
         Initializes an instance of the `AsyncLLM` class.
@@ -41,16 +44,21 @@ class AsyncLLM(StatelessLLMInterface):
         - project_id (str, optional): The project ID for the OpenAI API. Defaults to "z".
         - llm_api_key (str, optional): The API key for the OpenAI API. Defaults to "z".
         - temperature (float, optional): What sampling temperature to use, between 0 and 2. Defaults to 1.0.
+        - http_client (httpx.AsyncClient | None): Optional async HTTP client (e.g. ``trust_env=False`` to skip
+          proxy env vars when calling a local OpenAI-compatible server).
         """
         self.base_url = base_url
         self.model = model
         self.temperature = temperature
-        self.client = AsyncOpenAI(
-            base_url=base_url,
-            organization=organization_id,
-            project=project_id,
-            api_key=llm_api_key,
-        )
+        client_kwargs: dict[str, Any] = {
+            "base_url": base_url,
+            "organization": organization_id,
+            "project": project_id,
+            "api_key": llm_api_key,
+        }
+        if http_client is not None:
+            client_kwargs["http_client"] = http_client
+        self.client = AsyncOpenAI(**client_kwargs)
         self.support_tools = True
 
         logger.info(

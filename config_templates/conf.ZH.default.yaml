@@ -127,7 +127,7 @@ character_config:
 
       ollama_llm:
         base_url: 'http://localhost:11434/v1' # 基础 URL
-        model: 'qwen2.5:latest' # 使用的模型
+        model: 'qwen3:0.6b' # 使用的模型（小、低延迟）；拉取：ollama pull qwen3:0.6b
         temperature: 1.0 # 温度，介于 0 到 2 之间
         # 不活动后模型在内存中保留的时间（秒）
         # 设置为 -1 表示模型将永远保留在内存中（即使退出 open llm vtuber 之后也是）
@@ -268,6 +268,7 @@ character_config:
       lang: '' # 留空表示自动
 
   # =================== 文本转语音 ===================
+  # 引擎：微软 Edge 神经网络语音（edge-tts，需能访问微软语音服务端点）。
   tts_config:
     tts_model: 'edge_tts' # 使用的文本转语音模型
     # 文本转语音模型选项：

@@ -128,7 +128,7 @@ character_config:
 
       ollama_llm:
         base_url: 'http://localhost:11434/v1'
-        model: 'qwen2.5:latest'
+        model: 'qwen3:0.6b' # small / low-latency; run: ollama pull qwen3:0.6b
         temperature: 1.0 # value between 0 to 2
         # seconds to keep the model in memory after inactivity. 
         # set to -1 to keep the model in memory forever (even after exiting open llm vtuber)
@@ -271,6 +271,7 @@ character_config:
       lang: '' # put nothing and it will be auto
 
   # =================== Text to Speech ===================
+  # Engine: Microsoft Edge neural TTS (edge-tts; needs outbound HTTPS).
   tts_config:
     tts_model: 'edge_tts'
     # text to speech model options:

@@ -165,7 +165,11 @@ async def finalize_conversation_turn(
     client_uid: str,
     broadcast_ctx: Optional[BroadcastContext] = None,
 ) -> None:
-    """Finalize a conversation turn"""
+    """Finalize a conversation turn after TTS (if any) and optional playback wait.
+
+    Always emits ``force-new-message`` and conversation end signals so the client
+    can start another turn, even when ``frontend-playback-complete`` is missing.
+    """
     if tts_manager.task_list:
         await asyncio.gather(*tts_manager.task_list)
         await websocket_send(json.dumps({"type": "backend-synth-complete"}))
@@ -175,8 +179,10 @@ async def finalize_conversation_turn(
         )
 
         if not response:
-            logger.warning(f"No playback completion response from {client_uid}")
-            return
+            logger.warning(
+                "No playback completion from {}; continuing turn so the client can speak again.",
+                client_uid,
+            )
 
     await websocket_send(json.dumps({"type": "force-new-message"}))
 

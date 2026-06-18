@@ -118,6 +118,11 @@ The codebase uses the missing `_cleanup_failed_connection` method pattern - when
 - **Chat history**: `chat_history/`
 - **Cache**: `cache/` (audio files, temporary data)
 
+### Reachy Mini (robot bridge, this fork)
+
+- **Bridge client**: `reachy_bridge.py` — WebSocket client to `/client-ws`; see **[REACHY.md](REACHY.md)**
+- **Install**: `uv sync --extra reachy` (adds `reachy-mini[mujoco]`, `sounddevice`, `websockets`)
+
 ## Development Guidelines
 
 ### Adding New Engines
@@ -143,6 +148,7 @@ The codebase uses the missing `_cleanup_failed_connection` method pattern - when
 
 The project uses:
 - **Ruff** for linting and formatting (configured in `pyproject.toml`)
+- **Pytest** for unit tests (`uv sync --group dev`, `uv run pytest`; see `tests/`)
 - **Pre-commit hooks** for automated quality checks
 - **GitHub Actions** for CI/CD (`.github/workflows/`)
 - Manual testing through web interface and desktop client
@@ -153,4 +159,4 @@ Uses **uv** (modern Python package manager):
 - Dependencies defined in `pyproject.toml`
 - Lock file: `uv.lock`
 - Generated requirements: `requirements.txt` (auto-generated)
-- Optional dependencies for specific features (e.g., `bilibili` extra)
+- Optional dependencies for specific features (e.g., `bilibili`, `reachy` extras)

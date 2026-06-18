@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from typing import Dict, Optional, Callable
 
 import numpy as np
@@ -14,6 +15,9 @@ from .single_conversation import process_single_conversation
 from .conversation_utils import EMOJI_LIST
 from .types import GroupConversationState
 from prompts import prompt_loader
+
+# ~150 ms at 16 kHz mono float32; shorter buffers rarely produce usable ASR.
+_MIN_MIC_SAMPLES_FOR_ASR = 2400
 
 
 async def handle_conversation_trigger(
@@ -68,6 +72,30 @@ async def handle_conversation_trigger(
         user_input = received_data_buffers[client_uid]
         received_data_buffers[client_uid] = np.array([])
 
+        if isinstance(user_input, np.ndarray):
+            min_samples = int(
+                os.environ.get("OLV_MIN_MIC_SAMPLES", str(_MIN_MIC_SAMPLES_FOR_ASR))
+            )
+            if user_input.size < min_samples:
+                logger.warning(
+                    "Ignoring mic-audio-end for {}: buffer too short ({} < {})",
+                    client_uid,
+                    user_input.size,
+                    min_samples,
+                )
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "message": (
+                                "No speech captured (audio too short). Speak longer "
+                                "or check the microphone / bridge thresholds."
+                            ),
+                        }
+                    )
+                )
+                return
+
     images = data.get("images")
     session_emoji = np.random.choice(EMOJI_LIST)
 
@@ -96,6 +124,14 @@ async def handle_conversation_trigger(
             )
     else:
         # Use client_uid as task key for individual conversations
+        prior = current_conversation_tasks.get(client_uid)
+        if prior and not prior.done():
+            prior.cancel()
+            logger.info(
+                "Cancelled prior conversation task for {} (new mic/text trigger).",
+                client_uid,
+            )
+
         current_conversation_tasks[client_uid] = asyncio.create_task(
             process_single_conversation(
                 context=context,
